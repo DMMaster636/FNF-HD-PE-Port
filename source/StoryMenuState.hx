@@ -35,6 +35,9 @@ class StoryMenuState extends MusicBeatState
 
 	private static var curWeek:Int = 0;
 
+	var synth:FlxSound;
+	var drums:FlxSound;
+
 	var txtTracklist:FlxText;
 
 	var grpWeekText:FlxTypedGroup<MenuItem>;
@@ -90,12 +93,20 @@ class StoryMenuState extends MusicBeatState
 
 		#if desktop
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.changePresence("Selecting a Week", null);
 		#end
+
+		synth = new FlxSound().loadEmbedded(Paths.music('synthloop'), true);
+		drums = new FlxSound();
+		synth.play();
+		FlxG.sound.list.add(drums);
+		FlxG.sound.list.add(synth);
 
 		var num:Int = 0;
 		for (i in 0...WeekData.weeksList.length)
 		{
+			CoolUtil.precacheMusic('drumloops/drumloop' + i);
+
 			var weekFile:WeekData = WeekData.weeksLoaded.get(WeekData.weeksList[i]);
 			var isLocked:Bool = weekIsLocked(WeekData.weeksList[i]);
 			if(!isLocked || !weekFile.hiddenUntilUnlocked)
@@ -376,6 +387,17 @@ class StoryMenuState extends MusicBeatState
 		txtWeekTitle.x = FlxG.width - (txtWeekTitle.width + 10);
 
 		var bullShit:Int = 0;
+
+		if (curWeek > 0) {
+			drums.loadEmbedded(Paths.music('drumloops/drumloop' + curWeek), true);
+			drums.volume = 0;
+			drums.play();
+			drums.fadeIn(0.5);
+			drums.time = synth.time;
+		} else {
+			drums.volume = 0;
+			drums.fadeIn(0);
+		}
 
 		var unlocked:Bool = !weekIsLocked(leWeek.fileName);
 		for (item in grpWeekText.members)
